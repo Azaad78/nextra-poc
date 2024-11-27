@@ -1,0 +1,85 @@
++++
+title = "RBAC Terraform Pipelines"
+weight = 10
++++
+
+{{% toc %}}  
+
+## RBAC Pipelines available
+
+Les pipelines RBAC pour Terraform se trouvent [ici](https://gitlab.softfactory-accor.net/rbac/cd/software-factory/rbac-conf/infrastructure/rbac-ci-templates/-/tree/stable/piplines/terraform)
+
+The RBAC pipelines for Terraform can be foundhere
+
+Each pipeline responds to a use case determined by the following information.
+
+- terraform version -> supported versions: 0.13, 0.14 and 1. **[0-7]**
+- the targeted provider -> supported providers: AWS, Hashicorp Vault and Azure coming soon
+- the type of CD project
+  - infra -> provisioning of infrastructure type resources
+  - apps and review -> deployment of software components (lambda, docker images)
+  - prod -> live provisioning on production (AWS Transit Gateway, etc.) or isolated configurations (adding an ssh key, etc.)
+
+## List of available pipelines
+
+| terraform version | target provider | project type | pipelines                                                        |
+| ----------------- | --------------- | ------------ | -----------------------------------------------------------------|
+| 0.13              | AWS             | Apps         | pipelines/terraform/0.13/aws.apps.gitlab-ci.yml                  |
+| 0.14              | AWS             | Apps         | pipelines/terraform/0.13/aws.apps.gitlab-ci.yml                  |
+| 1. **[0-7]**       | AWS             | Apps         | pipelines/terraform/1. **[0-7]**/aws.apps.gitlab-ci.yml           |
+| 0.13              | AWS             | Infra        | pipelines/terraform/0.13/aws.infra.gitlab-ci.yml                 |
+| 0.14              | AWS             | Infra        | pipelines/terraform/0.13/aws.infra.gitlab-ci.yml                 |
+| 1. **[0-7]**       | AWS             | Infra        | pipelines/terraform/1. **[0-7]**/aws.infra.gitlab-ci.yml          |
+| 0.13              | AWS             | Prod         | pipelines/terraform/0.13/aws.prod.gitlab-ci.yml                  |
+| 0.14              | AWS             | Prod         | pipelines/terraform/0.13/aws.prod.gitlab-ci.yml                  |
+| 1. **[0-7]**       | AWS             | Prod         | pipelines/terraform/1. **[0-7]**/aws.prod.gitlab-ci.yml           |
+| 0.13              | AWS             | Review-Apps  | pipelines/terraform/0.13/aws.review-apps.gitlab-ci.yml           |
+| 0.14              | AWS             | Review-Apps  | pipelines/terraform/0.13/aws.review-apps.gitlab-ci.yml           |
+| 1. **[0-7]**       | AWS             | Review-Apps  | pipelines/terraform/1. **[0-7]**/aws.review-apps.gitlab-ci.yml    |
+| 0.13              | Gitlab          | Apps         | pipelines/terraform/0.13/gitlab.apps.gitlab-ci.yml               |
+| 0.14              | Gitlab          | Apps         | pipelines/terraform/0.13/gitlab.apps.gitlab-ci.yml               |
+| 1. **[0-7]**       | Gitlab          | Apps         | pipelines/terraform/1. **[0-7]**/gitlab.apps.gitlab-ci.yml        |
+| 0.13              | Gitlab          | Infra        | pipelines/terraform/0.13/gitlab.infra.gitlab-ci.yml              |
+| 0.14              | Gitlab          | Infra        | pipelines/terraform/0.13/gitlab.infra.gitlab-ci.yml              |
+| 1. **[0-7]**       | Gitlab          | Infra        | pipelines/terraform/1. **[0-7]**/gitlab.infra.gitlab-ci.yml       |
+| 0.13              | Gitlab          | Prod         | pipelines/terraform/0.13/gitlab.prod.gitlab-ci.yml               |
+| 0.14              | Gitlab          | Prod         | pipelines/terraform/0.13/gitlab.prod.gitlab-ci.yml               |
+| 1. **[0-7]**       | Gitlab          | Prod         | pipelines/terraform/1. **[0-7]**/gitlab.prod.gitlab-ci.yml        |
+| 0.13              | Gitlab          | Review-Apps  | pipelines/terraform/0.13/gitlab.review-apps.gitlab-ci.yml        |
+| 0.14              | Gitlab          | Review-Apps  | pipelines/terraform/0.13/gitlab.review-apps.gitlab-ci.yml        |
+| 1. **[0-7]**       | Gitlab          | Review-Apps  | pipelines/terraform/1. **[0-7]**/gitlab.review-apps.gitlab-ci.yml |
+| 0.14              | Azure           | Apps         | pipelines/terraform/0.13/azure.apps.gitlab-ci.yml                |
+| 1. **[0-7]**       | Azure           | Apps         | pipelines/terraform/1. **[0-7]**/azure.apps.gitlab-ci.yml         |
+| 0.14              | Azure           | Infra        | pipelines/terraform/0.13/azure.infra.gitlab-ci.yml               |
+| 1. **[0-7]**       | Azure           | Infra        | pipelines/terraform/1. **[0-7]**/azure.infra.gitlab-ci.yml        |
+| 0.14              | Azure           | Prod         | pipelines/terraform/0.13/azure.prod.gitlab-ci.yml                |
+| 1. **[0-7]**       | Azure           | Prod         | pipelines/terraform/1. **[0-7]**/azure.prod.gitlab-ci.yml         |
+| 0.14              | Azure           | Review-Apps  | pipelines/terraform/0.13/azure.review-apps.gitlab-ci.yml         |
+| 1. **[0-7]**       | Azure           | Review-Apps  | pipelines/terraform/1. **[0-7]**/azure.review-apps.gitlab-ci.yml  |
+| 0.14              | Vault           | Prod         | pipelines/terraform/0.13/vault.prod.gitlab-ci.yml                |
+| 1. **[0-7]**       | Vault           | Prod         | pipelines/terraform/1. **[0-7]**/vault.prod.gitlab-ci.yml         |
+
+## Terraform Pipeline Jobs
+
+| Job              | Description                                                                                                                                               |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| validate | Run the commands `terraform validate`, `terraform fmt` And `tf-lintto` **validate the terraform code** |
+| plan | Run the command `terraform plan` to **list the modifications to be made** on the target environment to align it with the terraform code |
+| apply	| Run the command `terraform apply` to **apply the changes identified** by the `terraform plan` |
+| check-apply | Rerun the command `terraform plan` following the “apply” job to **check the alignment between target environment and terraform code** |
+| destroy | Run the command `terraform destroy` to delete the target environment |
+| auto-apply | Run the command `terraform plan && terraform apply` to **automatically align target environment and terraform code** without human validation |
+| check-auto-apply | Rerun the command `terraform plan` following the “auto-apply” job to **check the alignment between target environment and terraform code** |
+
+{{<mermaid>}}
+graph LR
+    A(validate) -->|Deployment with validation| C(plan) --> D(apply) --> E(check-apply) --> F(destroy)
+    A -->|Automatic deployment| G(auto-apply) --> H(check-auto-apply) --> F(destroy)
+    B(checkov)
+{{</mermaid>}}
+
+## What pipeline is configured on my project ?
+
+The pipeline configured for your project is displayed in the job logs.
+
+![pipeline-logs](/documentation/sf-user-guide/images/deploiement-terraform-pipeline-logs.png)
